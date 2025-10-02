@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SMIC DC Gate Pass v4.1</title>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 10px;
+      background: #f5f6fa;
+      color: #2c3e50;
+      line-height: 1.4;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .header-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    h2 {
+      color: #2c3e50;
+      font-size: 1.8rem;
+      margin: 0;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .dropdown-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-btn {
+      background: #3498db;
+      color: white;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s ease;
+      min-width: 160px;
+      justify-content: space-between;
+    }
+
+    .dropdown-btn:hover {
+      background: #2980b9;
+    }
+
+    .dropdown-arrow {
+      font-size: 12px;
+      transition: transform 0.2s ease;
+    }
+
+    .dropdown-btn.active .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .dropdown-content.show {
+      display: block;
+    }
+
+    .dropdown-item {
+      display: block;
+      padding: 12px 16px;
+      color: #2c3e50;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s ease;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+      background: #f8f9fa;
+    }
+
+    .dropdown-item.current {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+    
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 15px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    fieldset {
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 8px;
+      background: white;
+      margin: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      transition: box-shadow 0.2s ease;
+    }
+    
+    fieldset:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    legend {
+      font-weight: 600;
+      padding: 6px 12px;
+      background: #2c3e50;
+      color: white;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      border: none;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 500;
+      color: #2c3e50;
+      font-size: 0.85rem;
+    }
+    
+    input[type="text"], input[type="date"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+      transition: border-color 0.2s ease;
+      background: white;
+      margin-bottom: 10px;
+    }
+    
+    input[type="text"]:focus, input[type="date"]:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+    }
+    
+    input[type="checkbox"], input[type="radio"] {
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+      accent-color: #3498db;
+      cursor: pointer;
+    }
+    
+    .checkbox-item, .radio-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    
+    .checkbox-item:hover, .radio-item:hover {
+      background: #f8f9fa;
+    }
+    
+    .checkbox-item label, .radio-item label {
+      margin-bottom: 0;
+      cursor: pointer;
+      flex-grow: 1;
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    
+    .form-group {
+      margin-bottom: 10px;
+    }
+    
+    button {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+    
+    .delete-btn {
+      background: #e74c3c;
+      color: white;
+      padding: 5px 10px;
+      font-size: 11px;
+    }
+    
+    .delete-btn:hover { 
+      background: #c0392b;
+    }
+    
+    .add-btn {
+      background: #27ae60;
+      color: white;
+      margin-top: 10px;
+    }
+    
+    .add-btn:hover { 
+      background: #219a52;
+    }
+    
+    .full-width {
+      grid-column: 1 / -1;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    th {
+      background: #34495e;
+      color: white;
+      padding: 8px 8px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    
+    td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    tr:hover {
+      background: #f8f9fa;
+    }
+    
+    .submit-btn {
+      grid-column: 1 / -1;
+      text-align: center;
+      margin-top: 15px;
+    }
+    
+    .submit-btn input {
+      background: #3498db;
+      color: white;
+      padding: 12px 28px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s ease;
+      min-width: 180px;
+    }
+    
+    .submit-btn input:hover { 
+      background: #2980b9;
+    }
+    
+    .checkbox-section {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 8px 0;
+      border-left: 3px solid #3498db;
+    }
+    
+    /* Compact sections */
+    .compact {
+      min-height: auto;
+    }
+    
+    .compact .form-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .compact .checkbox-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1024px) {
+      form {
+        grid-template-columns: 1fr;
+      }
+
+      .header-container {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 8px;
+      }
+      
+      h2 {
+        font-size: 1.6rem;
+      }
+      
+      fieldset {
+        padding: 12px;
+      }
+      
+      form {
+        gap: 12px;
+      }
+
+      .dropdown-btn {
+        min-width: 140px;
+        font-size: 13px;
+        padding: 8px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-container">
+      <h2>DC Gate Pass</h2>
+      <div class="dropdown-container">
+        <button class="dropdown-btn" onclick="toggleDropdown()">
+          <span>Select Form Type</span>
+          <span class="dropdown-arrow">▼</span>
+        </button>
+        <div class="dropdown-content" id="dropdownContent">
+          <button class="dropdown-item" onclick="navigateToForm('form1')">Work Permit Form</button>
+          <button class="dropdown-item current" onclick="navigateToForm('form2')">DC Internal Gate Pass Form</button>
+          <button class="dropdown-item" onclick="navigateToForm('form3')">NEO Gate Pass Form</button>
+        </div>
+      </div>
+    </div>
+    
+    <form id="gatePassForm">
+
+      <!-- General Info -->
+      <fieldset class="compact">
+        <legend>General Information</legend>
+        <div class="checkbox-section">
+          <div style="margin-bottom: 8px;">
+            <div style="font-weight: 500; margin-bottom: 6px; font-size: 0.85rem; color: #2c3e50;">Activity Type:</div>
+            <div class="radio-item">
+              <input type="radio" name="activity_type" id="transfer" value="transfer" onchange="toggleTransferFields()">
+              <label for="transfer">Transfer</label>
+            </div>
+            <div class="radio-item">
+              <input type="radio" name="activity_type" id="delivery" value="delivery" onchange="toggleTransferFields()">
+              <label for="delivery">Delivery</label>
+            </div>
+            <div class="radio-item">
+              <input type="radio" name="activity_type" id="pullout" value="pullout" onchange="toggleTransferFields()">
+              <label for="pullout">Pull Out</label>
+            </div>
+          </div>
+          <div id="transferFields" style="display: none; margin-top: 8px; padding: 8px; background: #e8f4f8; border-radius: 4px; border-left: 3px solid #3498db;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-size: 0.8rem; color: #2c3e50; font-weight: 500;">from</span>
+              <input type="text" name="from_dc" placeholder="Source DC" style="width: 120px; margin-bottom: 0; padding: 6px 8px; font-size: 12px;">
+              <span style="font-size: 0.8rem; color: #2c3e50; font-weight: 500;">to</span>
+              <input type="text" name="to_dc" placeholder="Destination DC" style="width: 120px; margin-bottom: 0; padding: 6px 8px; font-size: 12px;">
+            </div>
+          </div>
+          <div style="margin-top: 8px; margin-bottom: 8px;">
+            <div style="font-weight: 500; margin-bottom: 6px; font-size: 0.85rem; color: #2c3e50;">Pulled-out equipment contains data:</div>
+            <div class="radio-item">
+              <input type="radio" name="contains_data" id="data_yes" value="yes">
+              <label for="data_yes">Yes</label>
+            </div>
+            <div class="radio-item">
+              <input type="radio" name="contains_data" id="data_no" value="no">
+              <label for="data_no">No</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Date Filed:</label>
+          <input type="date" name="date_filed">
+        </div>
+        <div class="form-group">
+          <label>Delivered / Pulled by:</label>
+          <input type="text" name="del_pulled_by" placeholder="Enter name">
+        </div>
+        <div class="form-group">
+          <label>Company:</label>
+          <input type="text" name="company" placeholder="Enter company name">
+        </div>
+      </fieldset>
+
+      <!-- Location & Activity -->
+      <fieldset class="compact">
+        <legend>Location & Activity</legend>
+        <div class="form-group">
+          <label>Activity:</label>
+          <input type="text" name="activity" placeholder="Describe activity">
+        </div>
+        <div class="form-group">
+          <label>DC Location:</label>
+          <input type="text" name="dc_location" placeholder="Enter DC location">
+        </div>
+        <div class="form-group">
+          <label>Equipment Owner:</label>
+          <input type="text" name="equipment_owner" placeholder="Enter equipment owner">
+        </div>
+        <div class="form-group">
+          <label>Room:</label>
+          <input type="text" name="room" placeholder="Enter room number/name">
+        </div>
+        <div class="form-group">
+          <label>Rack No:</label>
+          <input type="text" name="rack_no" placeholder="Enter rack number">
+        </div>
+      </fieldset>
+
+      <!-- Items Table -->
+      <fieldset class="full-width">
+        <legend>Equipment Items</legend>
+        <table id="itemsTable">
+          <tr>
+            <th>#</th>
+            <th>Equipment</th>
+            <th>Serial No.</th>
+            <th>Quantity</th>
+            <th>Remarks</th>
+            <th>Action</th>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td><input type="text" name="equi1" placeholder="Equipment name/type"></td>
+            <td><input type="text" name="serial1" placeholder="Serial number"></td>
+            <td><input type="text" name="qty1" placeholder="Qty"></td>
+            <td><input type="text" name="remarks1" placeholder="Additional notes"></td>
+            <td><button type="button" class="delete-btn" onclick="deleteRow(this)">Remove</button></td>
+          </tr>
+        </table>
+        <button type="button" class="add-btn" onclick="addRow()">Add Equipment</button>
+      </fieldset>
+
+      <!-- Signatories -->
+      <fieldset class="full-width">
+        <legend>Signatories - Name/Date</legend>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+          <div class="form-group">
+            <label>Released by:</label>
+            <input type="text" name="released_by" placeholder="Name of releaser">
+          </div>
+          <div class="form-group">
+            <label>Accepted by:</label>
+            <input type="text" name="accepted_by" placeholder="Name of acceptor">
+          </div>
+          <div class="form-group">
+            <label>Updated by:</label>
+            <input type="text" name="updated_by" placeholder="Name of updater">
+          </div>
+          <div class="form-group">
+            <label>Noted by:</label>
+            <input type="text" name="noted_by" placeholder="Name of noter">
+          </div>
+          <div class="form-group">
+            <label>Approved by:</label>
+            <input type="text" name="approved_by" placeholder="Name of approver">
+          </div>
+          <div class="form-group">
+            <label>DC Guard:</label>
+            <input type="text" name="dc_guard" placeholder="Name of DC guard">
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="submit-btn">
+        <input type="submit" value="Generate SMIC Gate Pass PDF">
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const maxItems = 7;
+
+    // Function to show/hide transfer fields
+    function toggleTransferFields() {
+      const transferRadio = document.getElementById('transfer');
+      const transferFields = document.getElementById('transferFields');
+      
+      if (transferRadio.checked) {
+        transferFields.style.display = 'block';
+      } else {
+        transferFields.style.display = 'none';
+        // Clear the DC fields when not transfer
+        document.querySelector('input[name="from_dc"]').value = '';
+        document.querySelector('input[name="to_dc"]').value = '';
+      }
+    }
+
+    // ============ GOOGLE APPS SCRIPT CONFIGURATION ============
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxg0LKIMhZYQjSkUjf9tI1KtP6B45JCozP1KHlOL748FdLg_ssRUPv1yvCy0e_UTigM/exec';
+
+    // Dropdown functionality
+    function toggleDropdown() {
+      const dropdown = document.getElementById('dropdownContent');
+      const button = document.querySelector('.dropdown-btn');
+      
+      dropdown.classList.toggle('show');
+      button.classList.toggle('active');
+    }
+
+    function navigateToForm(formType) {
+      // Close dropdown
+      document.getElementById('dropdownContent').classList.remove('show');
+      document.querySelector('.dropdown-btn').classList.remove('active');
+      
+      // Handle navigation based on form type
+      switch(formType) {
+        case 'form1':
+          // Replace 'work_permit.html' with your actual file name
+          window.location.href = 'index.html';
+          break;
+        case 'form2':
+          // Replace 'work_permit.html' with your actual file name
+          window.location.href = 'smic_gatepass.html';
+          break;
+        case 'form3':
+          // Replace 'gate_pass.html' with your actual file name  
+          window.location.href = 'gate_pass.html';
+          break;
+        default:
+          console.log('Unknown form type:', formType);
+      }
+    }
+
+    // Close dropdown when clicking outside
+    window.addEventListener('click', function(event) {
+      if (!event.target.matches('.dropdown-btn') && !event.target.closest('.dropdown-container')) {
+        const dropdown = document.getElementById('dropdownContent');
+        const button = document.querySelector('.dropdown-btn');
+        dropdown.classList.remove('show');
+        button.classList.remove('active');
+      }
+    });
+
+    function addRow() {
+      const table = document.getElementById("itemsTable");
+      const rowCount = table.rows.length - 1;
+      if (rowCount >= maxItems) {
+        alert("Maximum " + maxItems + " items allowed");
+        return;
+      }
+
+      const row = table.insertRow();
+      row.innerHTML = `
+        <td></td>
+        <td><input type="text" placeholder="Equipment name/type"></td>
+        <td><input type="text" placeholder="Serial number"></td>
+        <td><input type="text" placeholder="Qty"></td>
+        <td><input type="text" placeholder="Additional notes"></td>
+        <td><button type="button" class="delete-btn" onclick="deleteRow(this)">Remove</button></td>
+      `;
+      reindex();
+    }
+
+    function deleteRow(btn) {
+      const table = document.getElementById("itemsTable");
+      if (table.rows.length <= 2) {
+        alert("At least 1 item must remain.");
+        return;
+      }
+      table.deleteRow(btn.parentNode.parentNode.rowIndex);
+      reindex();
+    }
+
+    function reindex() {
+      const table = document.getElementById("itemsTable");
+      for (let i = 1; i < table.rows.length; i++) {
+        const row = table.rows[i];
+        row.cells[0].innerText = i;
+        row.cells[1].children[0].setAttribute("name", "equi" + i);
+        row.cells[2].children[0].setAttribute("name", "serial" + i);
+        row.cells[3].children[0].setAttribute("name", "qty" + i);
+        row.cells[4].children[0].setAttribute("name", "remarks" + i);
+      }
+    }
+
+    // Format date functions
+    function formatDateToWords(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const monthNames = [
+        'Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.',
+        'Jul.', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'
+      ];
+      const month = monthNames[date.getMonth()];
+      const day = date.getDate();
+      const year = date.getFullYear();
+      return `${month} ${day}, ${year}`;
+    }
+
+    // Form submission and PDF generation
+    document.getElementById("gatePassForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      try {
+        const form = e.target;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        // Format date
+        if (data.date_filed) {
+          data.date_filed = formatDateToWords(data.date_filed);
+        }
+
+        // Note: You would need to load the appropriate SMIC PDF template here
+        // For now, this is a placeholder - replace with actual SMIC PDF filename
+        const existingPdfBytes = await fetch("SMIC_DC_Gate_Pass_v4_1.pdf")
+          .then(res => {
+            if (!res.ok) {
+              throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.arrayBuffer();
+          });
+        const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+        const formPdf = pdfDoc.getForm();
+
+        // Get all checkboxes and radio buttons to handle checked state properly
+        const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+        const radioButtons = form.querySelectorAll('input[type="radio"]');
+
+        // Fill PDF fields
+        for (const [key, value] of Object.entries(data)) {
+          const fields = formPdf.getFields().filter(f => f.getName() === key);
+          for (const field of fields) {
+            try {
+              if (field.setText) field.setText(value);
+              if (field.check && value === "on") field.check();
+            } catch (err) {
+              console.log(`Skipping ${key}: ${err.message}`);
+            }
+          }
+        }
+
+        // Handle checkboxes
+        checkboxes.forEach(checkbox => {
+          try {
+            const fields = formPdf.getFields().filter(f => f.getName() === checkbox.name);
+            fields.forEach(field => {
+              if (field.check && field.uncheck) {
+                if (checkbox.checked) {
+                  field.check();
+                } else {
+                  field.uncheck();
+                }
+              }
+            });
+          } catch (err) {
+            console.log(`Skipping checkbox ${checkbox.name}: ${err.message}`);
+          }
+        });
+
+        // Handle radio buttons
+        radioButtons.forEach(radio => {
+          try {
+            if (radio.checked) {
+              // Handle the radio button group for data containment
+              if (radio.name === 'contains_data') {
+                const yesFields = formPdf.getFields().filter(f => f.getName() === 'contains_data_yes');
+                const noFields = formPdf.getFields().filter(f => f.getName() === 'contains_data_no');
+                
+                if (radio.value === 'yes') {
+                  yesFields.forEach(field => {
+                    if (field.check) field.check();
+                  });
+                  noFields.forEach(field => {
+                    if (field.uncheck) field.uncheck();
+                  });
+                } else if (radio.value === 'no') {
+                  noFields.forEach(field => {
+                    if (field.check) field.check();
+                  });
+                  yesFields.forEach(field => {
+                    if (field.uncheck) field.uncheck();
+                  });
+                }
+              }
+              
+              // Handle activity type radio buttons
+              if (radio.name === 'activity_type') {
+                // Map to the original checkbox names for PDF compatibility
+                const transferFields = formPdf.getFields().filter(f => f.getName() === 'chckbox_transfer');
+                const deliveryFields = formPdf.getFields().filter(f => f.getName() === 'chckbox_delivery');
+                const pullFields = formPdf.getFields().filter(f => f.getName() === 'chckbox_pull');
+                
+                // Uncheck all first
+                [...transferFields, ...deliveryFields, ...pullFields].forEach(field => {
+                  if (field.uncheck) field.uncheck();
+                });
+                
+                // Check the selected one
+                if (radio.value === 'transfer') {
+                  transferFields.forEach(field => {
+                    if (field.check) field.check();
+                  });
+                } else if (radio.value === 'delivery') {
+                  deliveryFields.forEach(field => {
+                    if (field.check) field.check();
+                  });
+                } else if (radio.value === 'pullout') {
+                  pullFields.forEach(field => {
+                    if (field.check) field.check();
+                  });
+                }
+              }
+            }
+          } catch (err) {
+            console.log(`Skipping radio button ${radio.name}: ${err.message}`);
+          }
+        });
+
+        // Save and download
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: "application/pdf" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "SMIC_Gate_Pass_Filled.pdf";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Convert to Base64 for email sending
+        const base64Pdf = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(",")[1]);
+          reader.readAsDataURL(blob);
+        });
+
+        // Send to Google Apps Script
+        try {
+          console.log('Sending SMIC gate pass email...');
+          console.log('Company name:', data.company || 'Unknown');
+          
+          const emailResponse = await fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ 
+              pdfBase64: base64Pdf,
+              formData: data,
+              formType: 'smic_gate_pass'
+            })
+          });
+          
+          console.log("SMIC gate pass email request sent successfully");
+          alert("SMIC Gate Pass PDF generated successfully! Gate pass application will be sent to the manager.");
+        } catch (emailError) {
+          console.error("Email send error:", emailError);
+          alert("SMIC Gate Pass PDF generated successfully! However, there was an issue sending the email notification. Error: " + emailError.message);
+        }
+        
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+        alert("Error generating PDF. Please make sure the SMIC_Gate_Pass_Template.pdf file is in the same folder as this HTML file. Error: " + error.message);
+      }
+    });
+
+    // Initialize row indexing
+    reindex();
+  </script>
+</body>
+
+</html>
+
+
+
+
